@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 import { db } from './firebaseConfig.node';
-import { connectFirestoreEmulator, enableNetwork } from 'firebase/firestore';
+import { enableNetwork } from 'firebase/firestore';
 
 // Load environment variables
 config();

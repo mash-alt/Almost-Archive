@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, connectFirestoreEmulator, doc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
 config();
 

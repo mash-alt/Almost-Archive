@@ -177,21 +177,70 @@ src/
 
 ## 🚀 Deployment
 
-### Firebase Hosting
+### Automatic Deployment with GitHub Actions
+
+The project includes automated deployment to Firebase Hosting via GitHub Actions. Every push to the `main` branch will automatically build and deploy the site.
+
+#### Setup Instructions:
+
+1. **Generate Firebase Service Account Key**
+   ```bash
+   # Install Firebase CLI (if not already installed)
+   npm install -g firebase-tools
+   
+   # Login to Firebase
+   firebase login
+   
+   # Generate service account key
+   firebase projects:list
+   firebase projects:addfirebase PROJECT_ID
+   ```
+
+2. **Add GitHub Secrets**
+   
+   Go to your repository's Settings → Secrets and variables → Actions, and add these secrets:
+
+   **Firebase Configuration:**
+   - `VITE_FIREBASE_API_KEY`: Your Firebase API key
+   - `VITE_FIREBASE_AUTH_DOMAIN`: Your Firebase auth domain  
+   - `VITE_FIREBASE_PROJECT_ID`: Your Firebase project ID
+   - `VITE_FIREBASE_STORAGE_BUCKET`: Your Firebase storage bucket
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`: Your Firebase messaging sender ID
+   - `VITE_FIREBASE_APP_ID`: Your Firebase app ID
+   - `VITE_FIREBASE_MEASUREMENT_ID`: Your Firebase measurement ID
+
+   **App Configuration:**
+   - `VITE_APP_NAME`: "Almost Archive"
+   - `VITE_APP_URL`: Your production URL (e.g., https://almost-archive.web.app)
+   - `VITE_APP_ENVIRONMENT`: "production"
+
+   **Firebase Service Account:**
+   - `FIREBASE_SERVICE_ACCOUNT_ALMOST_ARCHIVE`: Your Firebase service account JSON (base64 encoded)
+
+3. **Get Firebase Service Account Key**
+   ```bash
+   # Create service account
+   firebase projects:addfirebase almost-archive
+   
+   # Download the service account key
+   # Go to Firebase Console → Project Settings → Service Accounts
+   # Generate new private key and download the JSON file
+   # Copy the entire JSON content as the secret value
+   ```
+
+4. **Push to Deploy**
+   ```bash
+   git add .
+   git commit -m "Setup automated deployment"
+   git push origin main
+   ```
+
+### Manual Firebase Deployment
 ```bash
 # Build the project
 npm run build
 
-# Install Firebase CLI (if not already installed)
-npm install -g firebase-tools
-
-# Login to Firebase
-firebase login
-
-# Initialize Firebase in your project
-firebase init
-
-# Deploy
+# Deploy manually (if needed)
 firebase deploy
 ```
 
