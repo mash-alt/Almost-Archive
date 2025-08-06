@@ -1,0 +1,119 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Special Elite', 'Courier New', monospace;
+  background: #f5f3f0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(171, 138, 110, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(189, 147, 121, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, #f5f3f0 0%, #e8e2db 100%);
+  color: #4a3728;
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Paper grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(171, 138, 110, 0.03) 2px,
+      rgba(171, 138, 110, 0.03) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(189, 147, 121, 0.03) 2px,
+      rgba(189, 147, 121, 0.03) 4px
+    );
+  pointer-events: none;
+  z-index: 1;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+a {
+  color: #8b6f52;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+a:hover {
+  color: #d4a574;
+  text-shadow: 1px 1px 2px rgba(212, 165, 116, 0.3);
+}
+
+/* Ink bleed hover effect */
+a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: radial-gradient(ellipse, #d4a574 0%, transparent 70%);
+  transition: width 0.6s ease;
+}
+
+a:hover::after {
+  width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #6b4e3d;
+  position: relative;
+}
+
+p {
+  margin-bottom: 1rem;
+  font-family: 'Special Elite', 'Courier New', monospace;
+}
+
+/* Selection styles */
+::selection {
+  background: rgba(212, 165, 116, 0.3);
+  color: #4a3728;
+}
+
+/* Focus styles */
+*:focus {
+  outline: 2px solid #d4a574;
+  outline-offset: 2px;
+}
+
+/* Vintage input styles */
+input, textarea, button {
+  font-family: 'Special Elite', 'Courier New', monospace;
+  background: #f9f7f4;
+  border: 1px solid #d4a574;
+  color: #4a3728;
+  padding: 0.5rem;
+  box-shadow: inset 2px 2px 4px rgba(171, 138, 110, 0.1);
+}
+
+input:focus, textarea:focus {
+  background: #ffffff;
+  box-shadow: inset 2px 2px 6px rgba(171, 138, 110, 0.15), 0 0 8px rgba(212, 165, 116, 0.2);
+}
