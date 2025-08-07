@@ -347,12 +347,42 @@
   font-family: 'Special Elite', monospace;
 }
 
+.char-count-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.char-warning {
+  font-size: 0.8rem;
+  color: #d4756b;
+  font-style: italic;
+  font-family: 'Special Elite', monospace;
+}
+
 .error-message {
   display: block;
   color: var(--dusty-rose);
   font-size: 0.9rem;
   margin-top: 0.5rem;
   font-style: italic;
+  padding: 0.5rem;
+  background-color: rgba(212, 117, 107, 0.1);
+  border-left: 3px solid var(--dusty-rose);
+  border-radius: 4px;
+}
+
+.form-group input.error,
+.form-group textarea.error {
+  border-color: var(--dusty-rose);
+  box-shadow: 0 0 5px rgba(212, 117, 107, 0.3);
+}
+
+.add-tag-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--light-brown);
 }
 
 /* Mood Selector */

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, collection, getDocs, query, where, orderBy, addDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs, query, where, addDoc, updateDoc, increment } from 'firebase/firestore';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { db } from '../firebaseConfig';
@@ -9,7 +9,8 @@ import {
   type Comment, 
   type UserReaction, 
   MOOD_OPTIONS, 
-  REACTION_OPTIONS 
+  REACTION_OPTIONS,
+  CONSTANTS
 } from '../types';
 import './StoryDetail.css';
 
@@ -80,6 +81,31 @@ const StoryDetail: React.FC = () => {
   // Reaction state
   const [userReaction, setUserReaction] = useState<string | null>(null);
   const [reactionCounts, setReactionCounts] = useState<{ [key: string]: number }>({});
+  const [commentLikes, setCommentLikes] = useState<{ [commentId: string]: boolean }>({});
+
+  // Load comment likes from localStorage
+  const getCommentLikes = (): { [commentId: string]: boolean } => {
+    try {
+      const stored = localStorage.getItem('almostArchive_commentLikes');
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const saveCommentLike = (commentId: string, liked: boolean) => {
+    try {
+      const likes = getCommentLikes();
+      if (liked) {
+        likes[commentId] = true;
+      } else {
+        delete likes[commentId];
+      }
+      localStorage.setItem('almostArchive_commentLikes', JSON.stringify(likes));
+    } catch (error) {
+      console.error('Failed to save comment like to localStorage:', error);
+    }
+  };
 
   useEffect(() => {
     if (!id) {
@@ -94,12 +120,17 @@ const StoryDetail: React.FC = () => {
       setUserReaction(existingReactions[id]);
     }
 
+    // Load comment likes from localStorage
+    const existingCommentLikes = getCommentLikes();
+    setCommentLikes(existingCommentLikes);
+
     loadStoryData();
   }, [id]);
 
   const loadStoryData = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Loading story data for ID:', id);
       
       // Load story
       const storyDoc = await getDoc(doc(db, 'stories', id!));
@@ -111,6 +142,7 @@ const StoryDetail: React.FC = () => {
 
       const storyData = { id: storyDoc.id, ...storyDoc.data() } as Story;
       setStory(storyData);
+      console.log('✅ Story loaded:', storyData.title);
 
       // Increment view count only if user hasn't viewed this story before
       const isFirstView = markStoryAsViewed(id!);
@@ -121,18 +153,37 @@ const StoryDetail: React.FC = () => {
         console.log('📈 View count incremented for first-time view');
       }
 
-      // Load comments
+      // Load comments - simplified query to avoid index issues
+      console.log('🔍 Loading comments for story ID:', id);
+      
+      // First, let's check all comments to see what's there
+      const allCommentsSnapshot = await getDocs(collection(db, 'comments'));
+      console.log('🔍 Total comments in database:', allCommentsSnapshot.docs.length);
+      allCommentsSnapshot.docs.forEach(doc => {
+        const data = doc.data();
+        console.log('Comment found:', {
+          id: doc.id,
+          storyId: data.storyId,
+          authorName: data.authorName,
+          body: data.body?.substring(0, 30) + '...'
+        });
+      });
+      
       const commentsQuery = query(
         collection(db, 'comments'),
-        where('storyId', '==', id),
-        orderBy('createdAt', 'desc')
+        where('storyId', '==', id)
       );
       const commentsSnapshot = await getDocs(commentsQuery);
       const commentsData = commentsSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as Comment[];
+      
+      // Sort comments by timestamp in JavaScript instead of Firestore
+      commentsData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      
       setComments(commentsData);
+      console.log('✅ Loaded comments for this story:', commentsData.length, commentsData);
 
       // Load reactions
       const reactionsQuery = query(
@@ -162,7 +213,40 @@ const StoryDetail: React.FC = () => {
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.author.trim() || !newComment.content.trim()) return;
+    
+    // Validation
+    const errors: string[] = [];
+    
+    if (!newComment.author.trim()) {
+      errors.push('Name is required');
+    } else if (newComment.author.trim().length < 2) {
+      errors.push('Name must be at least 2 characters');
+    } else if (newComment.author.length > 50) {
+      errors.push('Name must be less than 50 characters');
+    } else if (!/^[a-zA-Z\s\-_.']+$/.test(newComment.author)) {
+      errors.push('Name contains invalid characters');
+    }
+    
+    if (!newComment.content.trim()) {
+      errors.push('Comment is required');
+    } else if (newComment.content.trim().length < 10) {
+      errors.push('Comment must be at least 10 characters');
+    } else if (newComment.content.length > CONSTANTS.MAX_COMMENT_LENGTH) {
+      errors.push(`Comment must be less than ${CONSTANTS.MAX_COMMENT_LENGTH} characters`);
+    }
+    
+    // Email validation (optional field)
+    if (newComment.email && newComment.email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(newComment.email)) {
+        errors.push('Please enter a valid email address');
+      }
+    }
+    
+    if (errors.length > 0) {
+      alert('Please fix the following errors:\n' + errors.join('\n'));
+      return;
+    }
     
     setSubmittingComment(true);
     try {
@@ -223,6 +307,39 @@ const StoryDetail: React.FC = () => {
     } catch (err) {
       console.error('Error adding reaction:', err);
       alert('Failed to add reaction. Please try again.');
+    }
+  };
+
+  const handleCommentHeart = async (commentId: string) => {
+    // Check if user already liked this comment
+    if (commentLikes[commentId]) {
+      alert('You\'ve already hearted this comment! ❤️');
+      return;
+    }
+
+    try {
+      // Update comment in Firestore
+      await updateDoc(doc(db, 'comments', commentId), {
+        'reactions.hearts': increment(1)
+      });
+
+      // Update local state
+      setCommentLikes(prev => ({ ...prev, [commentId]: true }));
+      saveCommentLike(commentId, true);
+
+      // Update comments state to reflect the new heart count
+      setComments(prevComments => 
+        prevComments.map(comment => 
+          comment.id === commentId 
+            ? { ...comment, reactions: { ...comment.reactions, hearts: comment.reactions.hearts + 1 } }
+            : comment
+        )
+      );
+
+      console.log(`❤️ Added heart to comment ${commentId}`);
+    } catch (err) {
+      console.error('Error adding heart to comment:', err);
+      alert('Failed to heart comment. Please try again.');
     }
   };
 
@@ -386,7 +503,11 @@ const StoryDetail: React.FC = () => {
                     onChange={(e) => setNewComment(prev => ({ ...prev, author: e.target.value }))}
                     required
                     placeholder="Your name"
+                    maxLength={50}
+                    pattern="^[a-zA-Z\s\-_.']+$"
+                    title="Name should contain only letters, spaces, hyphens, apostrophes, and periods"
                   />
+                  <small>2-50 characters, letters and common punctuation only</small>
                 </div>
                 <div className="form-group">
                   <label htmlFor="comment-email">Email (optional)</label>
@@ -396,6 +517,7 @@ const StoryDetail: React.FC = () => {
                     value={newComment.email}
                     onChange={(e) => setNewComment(prev => ({ ...prev, email: e.target.value }))}
                     placeholder="your@email.com"
+                    title="Please enter a valid email address"
                   />
                 </div>
               </div>
@@ -409,7 +531,15 @@ const StoryDetail: React.FC = () => {
                   required
                   rows={4}
                   placeholder="Share your thoughts about this story..."
+                  maxLength={CONSTANTS.MAX_COMMENT_LENGTH}
+                  minLength={10}
                 />
+                <div className="char-count-container">
+                  <span className="char-count">{newComment.content.length}/{CONSTANTS.MAX_COMMENT_LENGTH}</span>
+                  {newComment.content.trim().length > 0 && newComment.content.trim().length < 10 && (
+                    <span className="char-warning">Minimum 10 characters required</span>
+                  )}
+                </div>
               </div>
               
               <div className="form-actions">
@@ -449,11 +579,16 @@ const StoryDetail: React.FC = () => {
                       {comment.body}
                     </ReactMarkdown>
                   </div>
-                  {comment.reactions.hearts > 0 && (
-                    <div className="comment-likes">
-                      ❤️ {comment.reactions.hearts}
-                    </div>
-                  )}
+                  <div className="comment-actions">
+                    <button
+                      className={`comment-heart-btn ${commentLikes[comment.id] ? 'liked' : ''}`}
+                      onClick={() => handleCommentHeart(comment.id)}
+                      disabled={commentLikes[comment.id]}
+                      title={commentLikes[comment.id] ? 'You\'ve already hearted this comment' : 'Heart this comment'}
+                    >
+                      ❤️ {comment.reactions.hearts || 0}
+                    </button>
+                  </div>
                 </div>
               ))
             )}
