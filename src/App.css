@@ -2,8 +2,8 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f3f0;
-  color: #4a3728;
+  background: var(--cream);
+  color: var(--dark-brown);
   font-family: 'Special Elite', 'Courier New', monospace;
   position: relative;
   z-index: 2;
@@ -32,17 +32,17 @@
   border: 2px solid;
   transition: all 0.4s ease;
   cursor: pointer;
-  background: #f9f7f4;
+  background: var(--paper-white);
   position: relative;
   overflow: hidden;
   box-shadow: 
-    3px 3px 6px rgba(171, 138, 110, 0.2),
+    3px 3px 6px var(--shadow-brown),
     inset 1px 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .btn-primary {
-  color: #8b6f52;
-  border-color: #d4a574;
+  color: var(--medium-brown);
+  border-color: var(--gold);
 }
 
 .btn-primary::before {
@@ -61,25 +61,25 @@
 }
 
 .btn-primary:hover {
-  background: #d4a574;
-  color: #f9f7f4;
+  background: var(--gold);
+  color: var(--paper-white);
   transform: translateY(-2px);
   box-shadow: 
-    4px 4px 8px rgba(171, 138, 110, 0.3),
+    4px 4px 8px var(--shadow-brown),
     inset 1px 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .btn-secondary {
-  color: #c49484;
-  border-color: #c49484;
+  color: var(--light-brown);
+  border-color: var(--light-brown);
 }
 
 .btn-secondary:hover {
-  background: #c49484;
-  color: #f9f7f4;
+  background: var(--light-brown);
+  color: var(--paper-white);
   transform: translateY(-2px);
   box-shadow: 
-    4px 4px 8px rgba(196, 148, 132, 0.3),
+    4px 4px 8px var(--shadow-brown),
     inset 1px 1px 0 rgba(255, 255, 255, 0.4);
 }
 
@@ -89,16 +89,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #e8e2db;
-  border: 1px solid #d4a574;
+  background: var(--warm-beige);
+  border: 1px solid var(--light-brown);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #d4a574 0%, #ab8a6e 100%);
+  background: linear-gradient(180deg, var(--gold) 0%, var(--medium-brown) 100%);
   border-radius: 7px;
-  border: 1px solid #8b6f52;
+  border: 1px solid var(--dark-brown);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #8b6f52 0%, #6b4e3d 100%);
+  background: linear-gradient(180deg, var(--medium-brown) 0%, var(--dark-brown) 100%);
 }
