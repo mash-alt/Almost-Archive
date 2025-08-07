@@ -38,6 +38,37 @@ const Home = () => {
         </div>
       </section>
 
+      <section className="about-cta">
+        <div className="container">
+          <div className="about-card">
+            <div className="about-content">
+              <h2>🌙 How It All Began</h2>
+              <p>
+                Born from a 3AM conversation between two friends across oceans, Almost Archive is more than just a collection of stories. 
+                It's a testament to the connections that transcend distance and the beauty found in shared vulnerability.
+              </p>
+              <p className="about-preview">
+                "What if we created a space where people could share their almosts without judgment?"
+              </p>
+              <Link to="/about" className="about-link">
+                Read our story →
+              </Link>
+            </div>
+            <div className="about-visual">
+              <div className="friendship-ascii">
+                <pre>{`
+  🌏 ────────── 🌍
+    Chloui    Zach
+      │        │
+      └── 💝 ──┘
+    Almost Archive
+                `}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="featured">
         <div className="container">
           <h2>Stories of Almost</h2>
