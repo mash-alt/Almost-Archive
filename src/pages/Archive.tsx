@@ -11,6 +11,29 @@ import {
 } from '../types';
 import './Archive.css';
 
+// LocalStorage keys for tracking user interactions
+const USER_LIKES_KEY = 'almostArchive_userLikes';
+
+// Helper functions for localStorage
+const getUserLikes = (): { [key: string]: boolean } => {
+  try {
+    const stored = localStorage.getItem(USER_LIKES_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+};
+
+const saveUserLike = (storyId: string) => {
+  try {
+    const likes = getUserLikes();
+    likes[storyId] = true;
+    localStorage.setItem(USER_LIKES_KEY, JSON.stringify(likes));
+  } catch (error) {
+    console.error('Failed to save user like:', error);
+  }
+};
+
 const Archive: React.FC = () => {
   const [stories, setStories] = useState<StoryPreview[]>([]);
   const [filteredStories, setFilteredStories] = useState<StoryPreview[]>([]);
@@ -28,9 +51,14 @@ const Archive: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const storiesPerPage = CONSTANTS.STORIES_PER_PAGE;
 
+  // User likes state
+  const [userLikes, setUserLikes] = useState<{ [key: string]: boolean }>({});
+
   // Load stories from Firestore
   useEffect(() => {
     loadStories();
+    // Load user likes from localStorage
+    setUserLikes(getUserLikes());
   }, []);
 
   // Apply filters and sorting when data or filters change
@@ -184,6 +212,58 @@ const Archive: React.FC = () => {
     setSelectedMoods([]);
     setSelectedTags([]);
     setSortBy('newest');
+  };
+
+  // Handle story like
+  const handleStoryLike = async (e: React.MouseEvent, storyId: string) => {
+    e.preventDefault(); // Prevent navigation
+    e.stopPropagation();
+
+    // Check if user already liked this story
+    if (userLikes[storyId]) {
+      alert('You\'ve already liked this story! ❤️');
+      return;
+    }
+
+    try {
+      // Initialize Firebase
+      const { initializeApp } = await import('firebase/app');
+      const { getFirestore, doc, updateDoc, increment } = await import('firebase/firestore');
+      
+      const firebaseConfig = {
+        apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+        authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+        projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+        storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+        appId: import.meta.env.VITE_FIREBASE_APP_ID,
+        measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+      };
+      
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      // Update reaction count in Firestore
+      await updateDoc(doc(db, 'stories', storyId), {
+        'reactions.total': increment(1)
+      });
+
+      // Save user's like to localStorage
+      saveUserLike(storyId);
+      setUserLikes(prev => ({ ...prev, [storyId]: true }));
+
+      // Update local state
+      setStories(prev => prev.map(story => 
+        story.id === storyId 
+          ? { ...story, reactions: { ...story.reactions, total: story.reactions.total + 1 } }
+          : story
+      ));
+
+      console.log(`✨ Liked story: ${storyId}`);
+    } catch (error) {
+      console.error('Error liking story:', error);
+      alert('Failed to like story. Please try again.');
+    }
   };
 
   // Pagination
@@ -363,7 +443,14 @@ const Archive: React.FC = () => {
 
                       <div className="story-stats">
                         <span className="read-count">👁️ {story.readCount}</span>
-                        <span className="reaction-count">❤️ {story.reactions.total}</span>
+                        <button
+                          className={`like-btn ${userLikes[story.id] ? 'liked' : ''}`}
+                          onClick={(e) => handleStoryLike(e, story.id)}
+                          disabled={userLikes[story.id]}
+                          title={userLikes[story.id] ? 'You\'ve already liked this story' : 'Like this story'}
+                        >
+                          ❤️ {story.reactions.total}
+                        </button>
                       </div>
                     </div>
 

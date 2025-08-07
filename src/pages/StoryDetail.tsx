@@ -17,6 +17,7 @@ import './StoryDetail.css';
 // LocalStorage keys for tracking user interactions
 const USER_REACTIONS_KEY = 'almostArchive_userReactions';
 const USER_VIEWS_KEY = 'almostArchive_userViews';
+const USER_LIKES_KEY = 'almostArchive_userLikes';
 
 // Helper functions for localStorage
 const getUserReactions = (): { [storyId: string]: string } => {
@@ -62,6 +63,29 @@ const markStoryAsViewed = (storyId: string) => {
   }
 };
 
+const getUserLikes = (): { [key: string]: boolean } => {
+  try {
+    const stored = localStorage.getItem(USER_LIKES_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+};
+
+const saveUserLike = (storyId: string, liked: boolean) => {
+  try {
+    const likes = getUserLikes();
+    if (liked) {
+      likes[storyId] = true;
+    } else {
+      delete likes[storyId];
+    }
+    localStorage.setItem(USER_LIKES_KEY, JSON.stringify(likes));
+  } catch (error) {
+    console.error('Failed to save like to localStorage:', error);
+  }
+};
+
 const StoryDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [story, setStory] = useState<Story | null>(null);
@@ -82,6 +106,7 @@ const StoryDetail: React.FC = () => {
   const [userReaction, setUserReaction] = useState<string | null>(null);
   const [reactionCounts, setReactionCounts] = useState<{ [key: string]: number }>({});
   const [commentLikes, setCommentLikes] = useState<{ [commentId: string]: boolean }>({});
+  const [userHasLiked, setUserHasLiked] = useState<boolean>(false);
 
   // Load comment likes from localStorage
   const getCommentLikes = (): { [commentId: string]: boolean } => {
@@ -123,6 +148,10 @@ const StoryDetail: React.FC = () => {
     // Load comment likes from localStorage
     const existingCommentLikes = getCommentLikes();
     setCommentLikes(existingCommentLikes);
+
+    // Check if user has liked this story
+    const storedUserLikes = getUserLikes();
+    setUserHasLiked(!!storedUserLikes[id]);
 
     loadStoryData();
   }, [id]);
@@ -310,6 +339,36 @@ const StoryDetail: React.FC = () => {
     }
   };
 
+  const handleStoryLike = async () => {
+    if (!story || !id) return;
+
+    try {
+      // Toggle like state
+      const newLikedState = !userHasLiked;
+      
+      // Update Firestore
+      const storyRef = doc(db, 'stories', id);
+      await updateDoc(storyRef, {
+        reactionCount: increment(newLikedState ? 1 : -1)
+      });
+
+      // Update localStorage
+      saveUserLike(id, newLikedState);
+      
+      // Update local state
+      setUserHasLiked(newLikedState);
+      setStory(prevStory => prevStory ? {
+        ...prevStory,
+        reactionCount: (prevStory.reactionCount || 0) + (newLikedState ? 1 : -1)
+      } : null);
+
+      console.log(`✨ ${newLikedState ? 'Liked' : 'Unliked'} story`);
+    } catch (err) {
+      console.error('Error updating story like:', err);
+      alert('Failed to update like. Please try again.');
+    }
+  };
+
   const handleCommentHeart = async (commentId: string) => {
     // Check if user already liked this comment
     if (commentLikes[commentId]) {
@@ -428,7 +487,14 @@ const StoryDetail: React.FC = () => {
           <div className="story-stats">
             <span>{story.readCount || 0} views</span>
             <span>{comments.length} comments</span>
-            <span>{Object.values(reactionCounts).reduce((a, b) => a + b, 0)} reactions</span>
+            <button
+              className={`like-btn ${userHasLiked ? 'liked' : ''}`}
+              onClick={handleStoryLike}
+              disabled={userHasLiked}
+              title={userHasLiked ? 'You\'ve already liked this story' : 'Like this story'}
+            >
+              ❤️ {story.reactionCount || Object.values(reactionCounts).reduce((a, b) => a + b, 0)}
+            </button>
           </div>
         </header>
 

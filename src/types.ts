@@ -12,6 +12,7 @@ export interface Story {
   tags: string[]; // Array of tags like ["first love", "cheated", "closure"]
   mood: Mood;
   reactions: StoryReactions;
+  reactionCount?: number; // Total likes/reactions count
   readCount: number;
   isPublished: boolean;
   slug: string; // URL-friendly version of title for routing
