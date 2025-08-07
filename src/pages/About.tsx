@@ -22,25 +22,29 @@ const About = () => {
               </div>
               <div className="terminal-body">
                 <pre>{`
-hey there,
+It all began with a 3AM conversation between two 
+friends in different parts of the world. Chloui was 
+wide awake in the quiet hours of the night, and Zach 
+was sipping his afternoon coffee—two different time 
+zones, one shared thought:
 
-this started as a 3am conversation between friends.
-chloui was staying up late, i was having afternoon
-coffee. different time zones, same idea:
+"What about all the relationships that almost worked out?"
 
-"what about all the relationships that almost worked?"
+From that question, Almost Archive was born.
 
-so we built this. a place for stories about exes,
-first loves, summer flings, and all the people who
-mattered but didn't stay.
+This space is for the stories that don't usually get 
+told—the ones without happy endings, the first loves 
+that faded, connections that still lingers in memory, 
+the people who mattered but didn't stay, and maybe 
+even summer flings.
 
-no happy endings required.
-no closure needed.
-just honest stories about the almosts.
+Here, we don't ask for closure.
+We don't demand silver linings.
+We just want honesty.
 
-because sometimes "almost" is the whole story.
+Because sometimes, "almost" is the whole story.
 
-- chloui & zach
+– Chloui & Zach
                 `}</pre>
               </div>
             </div>
