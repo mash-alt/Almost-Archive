@@ -50,6 +50,49 @@
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Structured Data (JSON-LD) for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Almost Archive",
+      "description": "An anthology of almosts - stories of love that lingered, hearts that hesitated, and connections that slipped through our fingers like sand.",
+      "url": "https://almost-archive.web.app/",
+      "author": {
+        "@type": "Person",
+        "name": "Chloui & Zach"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Almost Archive",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://almost-archive.web.app/favicon.ico"
+        }
+      },
+      "inLanguage": "en-US",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://almost-archive.web.app/archive?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Almost Archive - Story Collection",
+      "description": "A curated collection of personal stories about love, loss, and almost relationships.",
+      "url": "https://almost-archive.web.app/archive",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "Almost Archive",
+        "url": "https://almost-archive.web.app/"
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
